@@ -1,0 +1,8 @@
+[package]
+name = "cauchy"
+version = "0.1.0"
+authors = ["Lúcás Meier <cronokirby@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+glium = "0.23.0"
