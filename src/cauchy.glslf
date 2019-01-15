@@ -38,7 +38,7 @@ void main() {
 
     float h = polar.x / 2 / PI + 0.5;
     float s = 1.0;
-    float l = pow(0.4, 1 / (polar.y + 1));
+    float l = pow(0.2, 1 / (polar.y + 1));
 
     color = vec4(hsl2rgb(vec3(h, s, l)), 1.0);
 }
