@@ -53,11 +53,6 @@ impl InputState {
             _ => {}
         }
     }
-
-    fn update_imgui(&self, imgui: &mut imgui::ImGui) {
-        imgui.set_mouse_pos(self.mouse_x, self.mouse_y);
-        imgui.set_mouse_down([self.mouse_left, self.mouse_mid, self.mouse_right, false, false]);
-    }
 }
 
 
