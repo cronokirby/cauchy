@@ -51,7 +51,7 @@ vec2 c_sin(vec2 cart) {
 
 
 void main() {
-    vec2 pos = vec2(gl_FragCoord.x, gl_FragCoord.y) / 100 - 4;
+    vec2 pos = vec2(gl_FragCoord.x, gl_FragCoord.y) / 100 - 3;
     
     vec2 polar = cart2polar(c_sin(pos));
 

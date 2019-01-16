@@ -2,6 +2,10 @@
 extern crate glium;
 use glium::{Display, index, glutin, Surface, VertexBuffer};
 use glium::glutin::{Event, WindowEvent, VirtualKeyCode};
+#[macro_use]
+extern crate imgui;
+use imgui::{ImGuiCond};
+use imgui_glium_renderer::Renderer;
 
 
 #[derive(Copy, Clone)]
@@ -15,9 +19,14 @@ fn main() {
     let mut events_loop = glutin::EventsLoop::new();
     let window = glutin::WindowBuilder::new()
         .with_title("Cauchy".to_string())
-        .with_dimensions((800, 800).into());
+        .with_dimensions((600, 600).into());
     let context = glutin::ContextBuilder::new();
     let display = Display::new(window, context, &events_loop).unwrap();
+
+    let mut imgui = imgui::ImGui::init();
+    imgui.set_ini_filename(None);
+    imgui.set_font_global_scale(1.2);
+    let mut renderer = Renderer::init(&mut imgui, &display).unwrap();
 
     let program = glium::Program::from_source(
         &display,
@@ -42,7 +51,7 @@ fn main() {
         let mut target = display.draw();
 
         let uniforms = uniform! {
-            u_dark_plot: false
+            u_dark_plot: true
         };
 
         target.draw(
@@ -52,6 +61,18 @@ fn main() {
             &uniforms,
             &Default::default()
         ).unwrap();
+
+        let (w, h) = display.gl_window().get_inner_size().unwrap().into();
+        let hidpi = display.gl_window().get_hidpi_factor();
+        let ui = imgui.frame(imgui::FrameSize::new(w, h, hidpi), 0.1);
+        ui.window(im_str!("Controls"))
+            .size((200.0, 100.0), ImGuiCond::Always)
+            .position((w as f32 - 220.0, 20.0), ImGuiCond::Always)
+            .build(|| {
+                ui.text(im_str!("Can?"));
+                ui.small_button(im_str!("Dark"));
+            });
+        renderer.render(&mut target, ui).unwrap();
         target.finish().unwrap();
 
         let mut should_return = false;
