@@ -12,10 +12,13 @@ For the magnitude of the number, there are 2 plotting modes:
 
 We have light-valued domain coloring, like
 in this plot of `sin(z)`:
+
 ![](screenshots/sin_light.png)
+
 In this mode, the larger the magnitude gets, the more white the plot is.
 
 There's also a mode for doing dark concentric plots:
+
 ![](screenshots/sin_dark.png)
 
 In this mode, each line represents an exponential increase in magnitude.
