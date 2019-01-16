@@ -2,7 +2,11 @@
 
 out vec4 color;
 
-#define PI (3.14159265358);
+uniform bool u_dark_plot;
+
+
+const float TAU = 6.283185307179586;
+
 
 vec3 hsv2rgb(vec3 c) {
     vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
@@ -20,6 +24,12 @@ vec3 hsl2rgb(vec3 c) {
     }
     return hsv2rgb(vec3(c.x, s, v));
 }
+
+float smooth_fract(float f) {
+    return (1 + sin(TAU * f)) / 2;
+}
+
+// Complex functions
 
 vec2 cart2polar(vec2 cart) {
     return vec2(atan(cart.y, cart.x), length(cart));
@@ -39,14 +49,20 @@ vec2 c_sin(vec2 cart) {
     return vec2(re, im);
 }
 
+
 void main() {
     vec2 pos = vec2(gl_FragCoord.x, gl_FragCoord.y) / 100 - 4;
     
     vec2 polar = cart2polar(c_sin(pos));
 
-    float h = polar.x / 2 / PI + 0.5;
+    float h = polar.x / TAU;
     float s = 1.0;
-    float l = pow(0.2, 1 / (polar.y + 1));
-
-    color = vec4(hsl2rgb(vec3(h, s, l)), 1.0);
+    
+    if (u_dark_plot) {
+        float v = smooth_fract(log(polar.y));
+        color = vec4(hsv2rgb(vec3(h, s, v)), 1.0);
+    } else {
+        float l = pow(0.2, 1 / (polar.y + 1));
+        color = vec4(hsl2rgb(vec3(h, s, l)), 1.0);
+    }
 }

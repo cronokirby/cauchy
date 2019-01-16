@@ -41,11 +41,15 @@ fn main() {
     loop {
         let mut target = display.draw();
 
+        let uniforms = uniform! {
+            u_dark_plot: false
+        };
+
         target.draw(
             &vertex_buffer,
             &index::NoIndices(index::PrimitiveType::TrianglesList),
             &program,
-            &uniform! {},
+            &uniforms,
             &Default::default()
         ).unwrap();
         target.finish().unwrap();
