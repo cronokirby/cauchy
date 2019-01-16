@@ -1,3 +1,7 @@
+mod parser;
+
+#[macro_use]
+extern crate nom;
 #[macro_use]
 extern crate glium;
 use glium::{Display, index, glutin, Surface, VertexBuffer};
