@@ -66,7 +66,9 @@ struct Gui {
     renderer: Renderer,
     input: InputState,
     plot_str: ImString,
-    dark_plot: bool
+    dark_plot: bool,
+    tokens: [i32; 128],
+    floats: [f32; 128]
 }
 
 impl Gui {
@@ -77,8 +79,14 @@ impl Gui {
         let input = InputState::empty();
         // This should be sufficient for all the text we have
         let plot_str = ImString::with_capacity(256);
+        let mut tokens = [0; 128];
+        tokens[0] = 1;
+        let floats = [0.0; 128];
         Renderer::init(&mut imgui, facade).map(|renderer| {
-            Gui { imgui, renderer, input, plot_str, dark_plot: false }
+            Gui { 
+                imgui, renderer, input, plot_str, dark_plot: false,
+                tokens, floats
+            }
         })
     }
 
@@ -107,15 +115,29 @@ impl Gui {
                         Some(VirtualKeyCode::Q) => Some('q'),
                         Some(VirtualKeyCode::R) => Some('r'),
                         Some(VirtualKeyCode::S) => Some('s'),
-                        Some(VirtualKeyCode::T) => Some('t'),
                         Some(VirtualKeyCode::U) => Some('u'),
                         Some(VirtualKeyCode::V) => Some('v'),
                         Some(VirtualKeyCode::W) => Some('w'),
                         Some(VirtualKeyCode::X) => Some('x'),
                         Some(VirtualKeyCode::Y) => Some('y'),
                         Some(VirtualKeyCode::Z) => Some('z'),
+                        Some(VirtualKeyCode::Key0) => Some('0'),
+                        Some(VirtualKeyCode::Key1) => Some('1'),
+                        Some(VirtualKeyCode::Key2) => Some('2'),
+                        Some(VirtualKeyCode::Key3) => Some('3'),
+                        Some(VirtualKeyCode::Key4) => Some('4'),
+                        Some(VirtualKeyCode::Key5) => Some('5'),
+                        Some(VirtualKeyCode::Key6) => Some('6'),
+                        Some(VirtualKeyCode::Key7) => Some('7'),
+                        Some(VirtualKeyCode::Key8) => Some('8'),
+                        Some(VirtualKeyCode::Key9) => Some('9'),
                         Some(VirtualKeyCode::LBracket) => Some('('),
                         Some(VirtualKeyCode::RBracket) => Some(')'),
+                        Some(VirtualKeyCode::Add) => Some('+'),
+                        Some(VirtualKeyCode::Subtract) => Some('-'),
+                        Some(VirtualKeyCode::T) => Some('*'),
+                        Some(VirtualKeyCode::Slash) => Some('/'),
+                        Some(VirtualKeyCode::Space) => Some(' '),
                         Some(VirtualKeyCode::Back) => {
                             self.plot_str.clear();
                             None
@@ -144,6 +166,7 @@ impl Gui {
         let ui = self.imgui.frame(imgui::FrameSize::new(w, h, hidpi), 0.1);
         let mut dark_plot = self.dark_plot;
         let mut plot_str = self.plot_str.clone();
+        let mut should_plot = false;
         ui.window(im_str!("Controls"))
             .size((200.0, 100.0), ImGuiCond::Always)
             .position((w as f32 - 220.0, 20.0), ImGuiCond::Always)
@@ -158,9 +181,15 @@ impl Gui {
                 };
                 ui.input_text(im_str!("Expr"), &mut plot_str)
                     .build();
+                if ui.small_button(im_str!("Plot")) {
+                    should_plot = true;
+                }
             });
         self.dark_plot = dark_plot;
         self.plot_str = plot_str;
+        if should_plot {
+            parser::make_rpn(self.plot_str.to_str(), &mut self.tokens, &mut self.floats);
+        }
         self.renderer.render(target, ui)
             .expect("Failed to draw UI");
     }
@@ -203,10 +232,8 @@ fn main() {
     loop {
         let mut target = display.draw();
 
-        let tokens: [i32; 10] = [1, 7, 0, 0, 0, 0, 0, 0, 0, 0];
-        let token_buf = UniformBuffer::new(&display, tokens).unwrap();
-        let floats: [f32; 10] = [2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
-        let float_buf = UniformBuffer::new(&display, floats).unwrap();
+        let token_buf = UniformBuffer::new(&display, gui.tokens.clone()).unwrap();
+        let float_buf = UniformBuffer::new(&display, gui.floats.clone()).unwrap();
         let uniforms = uniform! {
             u_dark_plot: gui.is_dark_plot(),
             Tokens: { &token_buf },

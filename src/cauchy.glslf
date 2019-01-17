@@ -4,10 +4,10 @@ out vec4 color;
 
 uniform bool u_dark_plot;
 uniform Tokens {
-    int u_tokens[10];
+    int u_tokens[128];
 };
 uniform Floats {
-    float u_floats[10];
+    float u_floats[128];
 };
 
 const float TAU = 6.283185307179586;
@@ -65,7 +65,7 @@ vec2 c_sin(vec2 cart) {
 
 void main() {
     vec2 num = vec2(gl_FragCoord.x, gl_FragCoord.y) / 100 - 3;
-    vec2 stack[10];
+    vec2 stack[40];
     int stack_i = -1;
 
     for (int t_i = 0; t_i < u_tokens.length(); ++t_i) {

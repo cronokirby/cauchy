@@ -1,16 +1,21 @@
 use nom::types::CompleteStr;
 
 #[derive(Debug, Clone, PartialEq)]
-enum Expr {
+pub enum Expr {
     Scalar(f32),
     Var,
     I,
     Add(Box<Expr>, Box<Expr>),
     Sub(Box<Expr>, Box<Expr>),
     Mul(Box<Expr>, Box<Expr>),
-    Div(Box<Expr>, Box<Expr>)
+    Div(Box<Expr>, Box<Expr>),
+    Sin(Box<Expr>)
 }
 
+pub enum Todo {
+    Op(i32),
+    Expr(Expr)
+}
 
 
 named!(scalar<CompleteStr, Expr>,
@@ -25,11 +30,18 @@ named!(var<CompleteStr, Expr>,
     map!(tag!("z"), |_| Expr::Var)
 );
 
+named!(sin<CompleteStr, Expr>,
+    map!(delimited!(tag!("sin("), expr, tag!(")")),
+        |x| Expr::Sin(Box::new(x))
+    )
+);
+
 named!(factor<CompleteStr, Expr>,
     alt!(
         ws!(scalar) | 
         ws!(the_i)  |
         ws!(var)    |
+        ws!(sin)    |
         ws!(delimited!(tag!("("), expr, tag!(")")))
     )
 );
@@ -53,7 +65,7 @@ named!(expr1<CompleteStr, Expr>, do_parse!(
     >> (res)
 ));
 
-named!(expr<CompleteStr, Expr>, do_parse!(
+named!(pub expr<CompleteStr, Expr>, do_parse!(
     init: expr1 >>
     res: fold_many0!(
         tuple!(
@@ -71,6 +83,75 @@ named!(expr<CompleteStr, Expr>, do_parse!(
     )
     >> (res)
 ));
+
+
+pub fn make_rpn(input: &str, tokens: &mut [i32], floats: &mut [f32]) -> bool {
+    for x in tokens.iter_mut() {
+        *x = 0;
+    }
+    for x in floats.iter_mut() {
+        *x = 0.0;
+    }
+    let mut t_i: usize = 0; 
+    let mut f_i: usize = 0;
+    let mut todos: Vec<Todo> = Vec::new();
+    if let Ok((_, expr)) = expr(input.into()) {
+        todos.push(Todo::Expr(expr));
+    } else {
+        return false;
+    }
+    while let Some(todo) = todos.pop() {
+        if t_i >= tokens.len() || f_i >= floats.len() {
+            return false;
+        }
+        use self::Expr::*;
+        match todo {
+            Todo::Expr(Scalar(f)) => {
+                floats[f_i] = f;
+                tokens[t_i] = !(f_i as i32);
+                f_i += 1;
+                t_i += 1;
+            }
+            Todo::Expr(I) => {
+                tokens[t_i] = 2;
+                t_i += 1;
+            }
+            Todo::Expr(Var) => {
+                tokens[t_i] = 1;
+                t_i += 1;
+            }
+            Todo::Expr(Add(e1, e2)) => {
+                todos.push(Todo::Op(3));
+                todos.push(Todo::Expr(*e2));
+                todos.push(Todo::Expr(*e1));
+            }
+            Todo::Expr(Sub(e1, e2)) => {
+                todos.push(Todo::Op(4));
+                todos.push(Todo::Expr(*e2));
+                todos.push(Todo::Expr(*e1));
+            }
+            Todo::Expr(Mul(e1, e2)) => {
+                todos.push(Todo::Op(5));
+                todos.push(Todo::Expr(*e2));
+                todos.push(Todo::Expr(*e1));
+            }
+            Todo::Expr(Div(e1, e2)) => {
+                todos.push(Todo::Op(6));
+                todos.push(Todo::Expr(*e2));
+                todos.push(Todo::Expr(*e1));
+            }
+            Todo::Expr(Sin(e1)) => {
+                todos.push(Todo::Op(7));
+                todos.push(Todo::Expr(*e1));
+            }
+            Todo::Op(o) => {
+                tokens[t_i] = o;
+                t_i += 1;
+            }
+        }
+    }
+    true
+}
 
 
 #[cfg(test)]
