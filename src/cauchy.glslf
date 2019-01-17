@@ -56,6 +56,11 @@ vec2 c_exp(vec2 z) {
     return exp(z.x) * vec2(cos(z.y), sin(z.y));
 }
 
+vec2 c_ln(vec2 z) {
+    vec2 polar = cart2polar(z);
+    return vec2(log(polar.y), polar.x);
+}
+
 vec2 c_sin(vec2 cart) {
     float re = sin(cart.x) * cosh(cart.y);
     float im = cos(cart.x) * sinh(cart.y);
@@ -114,6 +119,10 @@ void main() {
             case 8:
                 b = stack[stack_i];
                 stack[stack_i] = c_exp(b);
+                break;
+            case 9:
+                b = stack[stack_i];
+                stack[stack_i] = c_ln(b);
                 break;
             default:
                 if (token >= 0) {
