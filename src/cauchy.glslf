@@ -3,7 +3,9 @@
 out vec4 color;
 
 uniform bool u_dark_plot;
-
+uniform Tokens {
+    int u_tokens[10];
+};
 
 const float TAU = 6.283185307179586;
 
@@ -51,9 +53,52 @@ vec2 c_sin(vec2 cart) {
 
 
 void main() {
-    vec2 pos = vec2(gl_FragCoord.x, gl_FragCoord.y) / 100 - 3;
+    vec2 num = vec2(gl_FragCoord.x, gl_FragCoord.y) / 100 - 3;
+    vec2 stack[10];
+    int stack_i = -1;
+
+    for (int t_i = 0; t_i < u_tokens.length(); ++t_i) {
+        bool should_exit = false;
+        vec2 b;
+        switch (u_tokens[t_i]) {
+            case 0:
+                should_exit = true;
+                break;
+            case 1:
+                ++stack_i;
+                stack[stack_i] = num;
+                break;
+            case 2:
+                ++stack_i;
+                stack[stack_i] = vec2(0, 1);
+                break;
+            case 3:
+                b = stack[stack_i];
+                --stack_i;
+                stack[stack_i] += b;
+                break;
+            case 4:
+                b = stack[stack_i];
+                --stack_i;
+                stack[stack_i] -= b;
+                break;
+            case 5:
+                b = stack[stack_i];
+                --stack_i;
+                vec2 a = stack[stack_i];
+                stack[stack_i] = c_mul(a, b);
+                break;
+            case 6:
+                b = stack[stack_i];
+                --stack_i;
+                stack[stack_i] = c_sin(b);
+        }
+        if (should_exit) {
+            break;
+        }
+    }
     
-    vec2 polar = cart2polar(c_sin(pos));
+    vec2 polar = cart2polar(stack[stack_i]);
 
     float h = polar.x / TAU;
     float s = 1.0;

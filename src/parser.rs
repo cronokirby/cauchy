@@ -3,6 +3,7 @@ use nom::types::CompleteStr;
 #[derive(Debug, Clone, PartialEq)]
 enum Expr {
     Scalar(f32),
+    Var,
     I,
     Add(Box<Expr>, Box<Expr>),
     Sub(Box<Expr>, Box<Expr>),
@@ -20,10 +21,15 @@ named!(the_i<CompleteStr, Expr>,
     map!(tag!("i"), |_| Expr::I)
 );
 
+named!(var<CompleteStr, Expr>,
+    map!(tag!("z"), |_| Expr::Var)
+);
+
 named!(factor<CompleteStr, Expr>,
     alt!(
         ws!(scalar) | 
         ws!(the_i)  |
+        ws!(var)    |
         ws!(delimited!(tag!("("), expr, tag!(")")))
     )
 );
@@ -89,6 +95,14 @@ mod tests {
     }
 
     #[test]
+    fn test_var() {
+        let res = var("z".into());
+        assert!(res.is_ok());
+        let (_, s) = res.unwrap();
+        assert_eq!(s, Expr::Var);
+    }
+
+    #[test]
     fn test_expr() {
         let res1 = expr("1.3 + 4.0".into()); 
         assert!(res1.is_ok());
@@ -115,4 +129,5 @@ mod tests {
             )
         ));
     }
+
 }

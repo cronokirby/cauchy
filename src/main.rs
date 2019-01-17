@@ -7,6 +7,7 @@ extern crate glium;
 use glium::{Display, index, glutin, Surface, VertexBuffer};
 use glium::backend::{Facade};
 use glium::glutin::{Event, ElementState, MouseButton, WindowEvent, VirtualKeyCode};
+use glium::uniforms::UniformBuffer;
 #[macro_use]
 extern crate imgui;
 use imgui::{ImGui, ImGuiCond};
@@ -150,8 +151,11 @@ fn main() {
     loop {
         let mut target = display.draw();
 
+        let tokens: [i32; 10] = [1, 2, 5, 6, 0, 0, 0, 0, 0, 0];
+        let token_buf = UniformBuffer::new(&display, tokens).unwrap();
         let uniforms = uniform! {
-            u_dark_plot: gui.is_dark_plot()
+            u_dark_plot: gui.is_dark_plot(),
+            Tokens: { &token_buf }
         };
         target.draw(
             &vertex_buffer,
