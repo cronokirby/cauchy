@@ -10,7 +10,7 @@ use glium::glutin::{Event, ElementState, MouseButton, WindowEvent, VirtualKeyCod
 use glium::uniforms::UniformBuffer;
 #[macro_use]
 extern crate imgui;
-use imgui::{ImGui, ImGuiCond};
+use imgui::{ImGui, ImGuiCond, ImString};
 use imgui_glium_renderer::{Renderer, RendererResult};
 
 
@@ -65,6 +65,7 @@ struct Gui {
     imgui: ImGui,
     renderer: Renderer,
     input: InputState,
+    plot_str: ImString,
     dark_plot: bool
 }
 
@@ -74,13 +75,60 @@ impl Gui {
         imgui.set_ini_filename(None);
         imgui.set_font_global_scale(1.2);
         let input = InputState::empty();
+        // This should be sufficient for all the text we have
+        let plot_str = ImString::with_capacity(256);
         Renderer::init(&mut imgui, facade).map(|renderer| {
-            Gui { imgui, renderer, input, dark_plot: false }
+            Gui { imgui, renderer, input, plot_str, dark_plot: false }
         })
     }
 
     fn handle_event(&mut self, we: &WindowEvent) {
         self.input.handle_event(we);
+        match we {
+            WindowEvent::KeyboardInput{ input, .. } => {
+                if input.state == ElementState::Pressed {
+                    let chr = match input.virtual_keycode {
+                        Some(VirtualKeyCode::A) => Some('a'),
+                        Some(VirtualKeyCode::B) => Some('b'),
+                        Some(VirtualKeyCode::C) => Some('c'),
+                        Some(VirtualKeyCode::D) => Some('d'),
+                        Some(VirtualKeyCode::E) => Some('e'),
+                        Some(VirtualKeyCode::F) => Some('f'),
+                        Some(VirtualKeyCode::G) => Some('g'),
+                        Some(VirtualKeyCode::H) => Some('h'),
+                        Some(VirtualKeyCode::I) => Some('i'),
+                        Some(VirtualKeyCode::J) => Some('j'),
+                        Some(VirtualKeyCode::K) => Some('k'),
+                        Some(VirtualKeyCode::L) => Some('l'),
+                        Some(VirtualKeyCode::M) => Some('m'),
+                        Some(VirtualKeyCode::N) => Some('n'),
+                        Some(VirtualKeyCode::O) => Some('o'),
+                        Some(VirtualKeyCode::P) => Some('p'),
+                        Some(VirtualKeyCode::Q) => Some('q'),
+                        Some(VirtualKeyCode::R) => Some('r'),
+                        Some(VirtualKeyCode::S) => Some('s'),
+                        Some(VirtualKeyCode::T) => Some('t'),
+                        Some(VirtualKeyCode::U) => Some('u'),
+                        Some(VirtualKeyCode::V) => Some('v'),
+                        Some(VirtualKeyCode::W) => Some('w'),
+                        Some(VirtualKeyCode::X) => Some('x'),
+                        Some(VirtualKeyCode::Y) => Some('y'),
+                        Some(VirtualKeyCode::Z) => Some('z'),
+                        Some(VirtualKeyCode::LBracket) => Some('('),
+                        Some(VirtualKeyCode::RBracket) => Some(')'),
+                        Some(VirtualKeyCode::Back) => {
+                            self.plot_str.clear();
+                            None
+                        }
+                        _ => None
+                    };
+                    if let Some(c) = chr {
+                        self.plot_str.push(c);
+                    }
+                }
+            }
+            _ => {}
+        }
     }
 
     fn update_input(&mut self) {
@@ -95,6 +143,7 @@ impl Gui {
         let hidpi = display.gl_window().get_hidpi_factor();
         let ui = self.imgui.frame(imgui::FrameSize::new(w, h, hidpi), 0.1);
         let mut dark_plot = self.dark_plot;
+        let mut plot_str = self.plot_str.clone();
         ui.window(im_str!("Controls"))
             .size((200.0, 100.0), ImGuiCond::Always)
             .position((w as f32 - 220.0, 20.0), ImGuiCond::Always)
@@ -107,8 +156,11 @@ impl Gui {
                 if ui.small_button(text) {
                     dark_plot = !dark_plot;
                 };
+                ui.input_text(im_str!("Expr"), &mut plot_str)
+                    .build();
             });
         self.dark_plot = dark_plot;
+        self.plot_str = plot_str;
         self.renderer.render(target, ui)
             .expect("Failed to draw UI");
     }
@@ -151,7 +203,7 @@ fn main() {
     loop {
         let mut target = display.draw();
 
-        let tokens: [i32; 10] = [!0, 1, 5, 7, 0, 0, 0, 0, 0, 0];
+        let tokens: [i32; 10] = [1, 7, 0, 0, 0, 0, 0, 0, 0, 0];
         let token_buf = UniformBuffer::new(&display, tokens).unwrap();
         let floats: [f32; 10] = [2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
         let float_buf = UniformBuffer::new(&display, floats).unwrap();
