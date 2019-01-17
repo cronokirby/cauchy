@@ -61,6 +61,10 @@ vec2 c_ln(vec2 z) {
     return vec2(log(polar.y), polar.x);
 }
 
+vec2 c_pow(vec2 z1, vec2 z2) {
+    return c_exp(c_mul(c_ln(z1), z2));
+}
+
 vec2 c_sin(vec2 cart) {
     float re = sin(cart.x) * cosh(cart.y);
     float im = cos(cart.x) * sinh(cart.y);
@@ -114,13 +118,19 @@ void main() {
                 break;
             case 7:
                 b = stack[stack_i];
-                stack[stack_i] = c_sin(b);
+                --stack_i;
+                a = stack[stack_i];
+                stack[stack_i] = c_pow(a, b);
                 break;
             case 8:
                 b = stack[stack_i];
-                stack[stack_i] = c_exp(b);
+                stack[stack_i] = c_sin(b);
                 break;
             case 9:
+                b = stack[stack_i];
+                stack[stack_i] = c_exp(b);
+                break;
+            case 10:
                 b = stack[stack_i];
                 stack[stack_i] = c_ln(b);
                 break;

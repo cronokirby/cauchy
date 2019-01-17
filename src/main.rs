@@ -119,7 +119,6 @@ impl Gui {
                         Some(VirtualKeyCode::V) => Some('v'),
                         Some(VirtualKeyCode::W) => Some('w'),
                         Some(VirtualKeyCode::X) => Some('x'),
-                        Some(VirtualKeyCode::Y) => Some('y'),
                         Some(VirtualKeyCode::Z) => Some('z'),
                         Some(VirtualKeyCode::Key0) => Some('0'),
                         Some(VirtualKeyCode::Key1) => Some('1'),
@@ -137,6 +136,7 @@ impl Gui {
                         Some(VirtualKeyCode::Subtract) => Some('-'),
                         Some(VirtualKeyCode::T) => Some('*'),
                         Some(VirtualKeyCode::Slash) => Some('/'),
+                        Some(VirtualKeyCode::Y) => Some('^'),
                         Some(VirtualKeyCode::Space) => Some(' '),
                         Some(VirtualKeyCode::Back) => {
                             self.plot_str.clear();

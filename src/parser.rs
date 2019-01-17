@@ -9,6 +9,7 @@ pub enum Expr {
     Sub(Box<Expr>, Box<Expr>),
     Mul(Box<Expr>, Box<Expr>),
     Div(Box<Expr>, Box<Expr>),
+    Pow(Box<Expr>, Box<Expr>),
     Sin(Box<Expr>),
     Exp(Box<Expr>),
     Ln(Box<Expr>)
@@ -62,12 +63,24 @@ named!(factor<CompleteStr, Expr>,
     )
 );
 
-named!(expr1<CompleteStr, Expr>, do_parse!(
+named!(expr2<CompleteStr, Expr>, do_parse!(
     init: factor >>
+    res: fold_many0!(
+        tuple!(tag!("^"), factor),
+        init,
+        |acc, v: (_, Expr)| {
+            Expr::Pow(Box::new(acc), Box::new(v.1))
+        }
+    )
+    >> (res)
+));
+
+named!(expr1<CompleteStr, Expr>, do_parse!(
+    init: expr2 >>
     res: fold_many0!(
         tuple!(
             alt!(tag!("*") | tag!("/")),
-            factor
+            expr2
         ),
         init,
         |acc, v: (_, Expr)| {
@@ -156,16 +169,21 @@ pub fn make_rpn(input: &str, tokens: &mut [i32], floats: &mut [f32]) -> bool {
                 todos.push(Todo::Expr(*e2));
                 todos.push(Todo::Expr(*e1));
             }
-            Todo::Expr(Sin(e1)) => {
+            Todo::Expr(Pow(e1, e2)) => {
                 todos.push(Todo::Op(7));
+                todos.push(Todo::Expr(*e2));
                 todos.push(Todo::Expr(*e1));
             }
-            Todo::Expr(Exp(e1)) => {
+            Todo::Expr(Sin(e1)) => {
                 todos.push(Todo::Op(8));
                 todos.push(Todo::Expr(*e1));
             }
-            Todo::Expr(Ln(e1)) => {
+            Todo::Expr(Exp(e1)) => {
                 todos.push(Todo::Op(9));
+                todos.push(Todo::Expr(*e1));
+            }
+            Todo::Expr(Ln(e1)) => {
+                todos.push(Todo::Op(10));
                 todos.push(Todo::Expr(*e1));
             }
             Todo::Op(o) => {
