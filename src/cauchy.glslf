@@ -109,7 +109,6 @@ void main() {
                 break;
             case 7:
                 b = stack[stack_i];
-                --stack_i;
                 stack[stack_i] = c_sin(b);
                 break;
             default:
