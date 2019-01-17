@@ -32,15 +32,15 @@ named!(expr1<CompleteStr, Expr>, do_parse!(
     init: factor >>
     res: fold_many0!(
         tuple!(
-            alt!(tag!("+") | tag!("-")),
+            alt!(tag!("*") | tag!("/")),
             factor
         ),
         init,
         |acc, v: (_, Expr)| {
-            if v.0 == "+".into() {
-                Expr::Add(Box::new(acc), Box::new(v.1))
+            if v.0 == "*".into() {
+                Expr::Mul(Box::new(acc), Box::new(v.1))
             } else {
-                Expr::Sub(Box::new(acc), Box::new(v.1))
+                Expr::Div(Box::new(acc), Box::new(v.1))
             }
         }
     )
@@ -51,15 +51,15 @@ named!(expr<CompleteStr, Expr>, do_parse!(
     init: expr1 >>
     res: fold_many0!(
         tuple!(
-            alt!(tag!("*") | tag!("/")),
-            factor
+            alt!(tag!("+") | tag!("-")),
+            expr1
         ),
         init,
         |acc, v: (_, Expr)| {
-            if v.0 == "*".into() {
-                Expr::Mul(Box::new(acc), Box::new(v.1))
+            if v.0 == "+".into() {
+                Expr::Add(Box::new(acc), Box::new(v.1))
             } else {
-                Expr::Div(Box::new(acc), Box::new(v.1))
+                Expr::Sub(Box::new(acc), Box::new(v.1))
             }
         }
     )
@@ -102,5 +102,17 @@ mod tests {
         assert!(res3.is_ok());
         let (_, s3) = res3.unwrap();
         assert_eq!(s3, Expr::Mul(Box::new(Expr::Scalar(1.3)), Box::new(Expr::Scalar(4.0))));
+        let res4 = expr("1.3 + 4.0 * i".into());
+        assert!(res4.is_ok());
+        let (_, s4) = res4.unwrap();
+        assert_eq!(s4,
+            Expr::Add(
+                Box::new(Expr::Scalar(1.3)),
+                Box::new(Expr::Mul(
+                    Box::new(Expr::Scalar(4.0)),
+                    Box::new(Expr::I)
+                )
+            )
+        ));
     }
 }
