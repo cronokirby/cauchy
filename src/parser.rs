@@ -5,7 +5,9 @@ enum Expr {
     Scalar(f32),
     I,
     Add(Box<Expr>, Box<Expr>),
-    Sub(Box<Expr>, Box<Expr>)
+    Sub(Box<Expr>, Box<Expr>),
+    Mul(Box<Expr>, Box<Expr>),
+    Div(Box<Expr>, Box<Expr>)
 }
 
 
@@ -26,7 +28,7 @@ named!(factor<CompleteStr, Expr>,
     )
 );
 
-named!(expr<CompleteStr, Expr>, do_parse!(
+named!(expr1<CompleteStr, Expr>, do_parse!(
     init: factor >>
     res: fold_many0!(
         tuple!(
@@ -39,6 +41,25 @@ named!(expr<CompleteStr, Expr>, do_parse!(
                 Expr::Add(Box::new(acc), Box::new(v.1))
             } else {
                 Expr::Sub(Box::new(acc), Box::new(v.1))
+            }
+        }
+    )
+    >> (res)
+));
+
+named!(expr<CompleteStr, Expr>, do_parse!(
+    init: expr1 >>
+    res: fold_many0!(
+        tuple!(
+            alt!(tag!("*") | tag!("/")),
+            factor
+        ),
+        init,
+        |acc, v: (_, Expr)| {
+            if v.0 == "*".into() {
+                Expr::Mul(Box::new(acc), Box::new(v.1))
+            } else {
+                Expr::Div(Box::new(acc), Box::new(v.1))
             }
         }
     )
@@ -77,5 +98,9 @@ mod tests {
         assert!(res2.is_ok());
         let (_, s2) = res2.unwrap();
         assert_eq!(s2, Expr::Sub(Box::new(Expr::Scalar(1.3)), Box::new(Expr::Scalar(4.0))));
+        let res3 = expr("1.3 * 4.0".into());
+        assert!(res3.is_ok());
+        let (_, s3) = res3.unwrap();
+        assert_eq!(s3, Expr::Mul(Box::new(Expr::Scalar(1.3)), Box::new(Expr::Scalar(4.0))));
     }
 }
