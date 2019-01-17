@@ -4,7 +4,8 @@ use nom::types::CompleteStr;
 enum Expr {
     Scalar(f32),
     I,
-    Add(Box<Expr>, Box<Expr>)
+    Add(Box<Expr>, Box<Expr>),
+    Sub(Box<Expr>, Box<Expr>)
 }
 
 
@@ -29,11 +30,16 @@ named!(expr<CompleteStr, Expr>, do_parse!(
     init: factor >>
     res: fold_many0!(
         tuple!(
-            tag!("+"), factor
+            alt!(tag!("+") | tag!("-")),
+            factor
         ),
         init,
         |acc, v: (_, Expr)| {
-            Expr::Add(Box::new(acc), Box::new(v.1))
+            if v.0 == "+".into() {
+                Expr::Add(Box::new(acc), Box::new(v.1))
+            } else {
+                Expr::Sub(Box::new(acc), Box::new(v.1))
+            }
         }
     )
     >> (res)
@@ -63,10 +69,13 @@ mod tests {
 
     #[test]
     fn test_expr() {
-        let res = expr("1.3 + 4.0".into()); 
-        println!("{:?}", res);
-        assert!(res.is_ok());
-        let (_, s) = res.unwrap();
-        assert_eq!(s, Expr::Add(Box::new(Expr::Scalar(1.3)), Box::new(Expr::Scalar(4.0))));
+        let res1 = expr("1.3 + 4.0".into()); 
+        assert!(res1.is_ok());
+        let (_, s1) = res1.unwrap();
+        assert_eq!(s1, Expr::Add(Box::new(Expr::Scalar(1.3)), Box::new(Expr::Scalar(4.0))));
+        let res2 = expr("1.3 - 4.0".into());
+        assert!(res2.is_ok());
+        let (_, s2) = res2.unwrap();
+        assert_eq!(s2, Expr::Sub(Box::new(Expr::Scalar(1.3)), Box::new(Expr::Scalar(4.0))));
     }
 }
