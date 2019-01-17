@@ -111,6 +111,10 @@ void main() {
                 b = stack[stack_i];
                 stack[stack_i] = c_sin(b);
                 break;
+            case 8:
+                b = stack[stack_i];
+                stack[stack_i] = c_exp(b);
+                break;
             default:
                 if (token >= 0) {
                     continue;

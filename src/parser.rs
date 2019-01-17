@@ -9,7 +9,8 @@ pub enum Expr {
     Sub(Box<Expr>, Box<Expr>),
     Mul(Box<Expr>, Box<Expr>),
     Div(Box<Expr>, Box<Expr>),
-    Sin(Box<Expr>)
+    Sin(Box<Expr>),
+    Exp(Box<Expr>)
 }
 
 pub enum Todo {
@@ -36,12 +37,19 @@ named!(sin<CompleteStr, Expr>,
     )
 );
 
+named!(exp<CompleteStr, Expr>,
+    map!(delimited!(tag!("exp("), expr, tag!(")")),
+        |x| Expr::Exp(Box::new(x))
+    )
+);
+
 named!(factor<CompleteStr, Expr>,
     alt!(
         ws!(scalar) | 
         ws!(the_i)  |
         ws!(var)    |
         ws!(sin)    |
+        ws!(exp)    |
         ws!(delimited!(tag!("("), expr, tag!(")")))
     )
 );
@@ -142,6 +150,10 @@ pub fn make_rpn(input: &str, tokens: &mut [i32], floats: &mut [f32]) -> bool {
             }
             Todo::Expr(Sin(e1)) => {
                 todos.push(Todo::Op(7));
+                todos.push(Todo::Expr(*e1));
+            }
+            Todo::Expr(Exp(e1)) => {
+                todos.push(Todo::Op(8));
                 todos.push(Todo::Expr(*e1));
             }
             Todo::Op(o) => {
