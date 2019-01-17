@@ -41,6 +41,14 @@ vec2 c_mul(vec2 z1, vec2 z2) {
     return vec2(z1.x * z2.x - z1.y * z2.y, z1.y * z2.x + z1.x * z2.y);
 }
 
+vec2 c_inv(vec2 cart) {
+    return vec2(cart.x, -cart.y) / dot(cart, cart);
+}
+
+vec2 c_div(vec2 z1, vec2 z2) {
+    return c_mul(z1, c_inv(z2));
+}
+
 vec2 c_exp(vec2 z) {
     return exp(z.x) * vec2(cos(z.y), sin(z.y));
 }
@@ -59,6 +67,7 @@ void main() {
 
     for (int t_i = 0; t_i < u_tokens.length(); ++t_i) {
         bool should_exit = false;
+        vec2 a;
         vec2 b;
         switch (u_tokens[t_i]) {
             case 0:
@@ -85,10 +94,16 @@ void main() {
             case 5:
                 b = stack[stack_i];
                 --stack_i;
-                vec2 a = stack[stack_i];
+                a = stack[stack_i];
                 stack[stack_i] = c_mul(a, b);
                 break;
             case 6:
+                b = stack[stack_i];
+                --stack_i;
+                a = stack[stack_i];
+                stack[stack_i] = c_div(a, b);
+                break;
+            case 7:
                 b = stack[stack_i];
                 --stack_i;
                 stack[stack_i] = c_sin(b);

@@ -151,7 +151,7 @@ fn main() {
     loop {
         let mut target = display.draw();
 
-        let tokens: [i32; 10] = [1, 2, 5, 6, 0, 0, 0, 0, 0, 0];
+        let tokens: [i32; 10] = [2, 1, 6, 0, 0, 0, 0, 0, 0, 0];
         let token_buf = UniformBuffer::new(&display, tokens).unwrap();
         let uniforms = uniform! {
             u_dark_plot: gui.is_dark_plot(),
