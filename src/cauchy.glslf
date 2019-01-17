@@ -6,6 +6,9 @@ uniform bool u_dark_plot;
 uniform Tokens {
     int u_tokens[10];
 };
+uniform Floats {
+    float u_floats[10];
+};
 
 const float TAU = 6.283185307179586;
 
@@ -69,7 +72,8 @@ void main() {
         bool should_exit = false;
         vec2 a;
         vec2 b;
-        switch (u_tokens[t_i]) {
+        int token = u_tokens[t_i];
+        switch (token) {
             case 0:
                 should_exit = true;
                 break;
@@ -107,6 +111,15 @@ void main() {
                 b = stack[stack_i];
                 --stack_i;
                 stack[stack_i] = c_sin(b);
+                break;
+            default:
+                if (token >= 0) {
+                    continue;
+                }
+                int float_i = ~token;
+                ++stack_i;
+                stack[stack_i] = vec2(u_floats[float_i], 0);
+                break;
         }
         if (should_exit) {
             break;

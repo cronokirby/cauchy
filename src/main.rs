@@ -151,11 +151,14 @@ fn main() {
     loop {
         let mut target = display.draw();
 
-        let tokens: [i32; 10] = [2, 1, 6, 0, 0, 0, 0, 0, 0, 0];
+        let tokens: [i32; 10] = [!0, 1, 5, 7, 0, 0, 0, 0, 0, 0];
         let token_buf = UniformBuffer::new(&display, tokens).unwrap();
+        let floats: [f32; 10] = [2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0];
+        let float_buf = UniformBuffer::new(&display, floats).unwrap();
         let uniforms = uniform! {
             u_dark_plot: gui.is_dark_plot(),
-            Tokens: { &token_buf }
+            Tokens: { &token_buf },
+            Floats: { &float_buf }
         };
         target.draw(
             &vertex_buffer,
