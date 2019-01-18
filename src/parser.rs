@@ -13,7 +13,8 @@ pub enum Expr {
     Sin(Box<Expr>),
     Exp(Box<Expr>),
     Ln(Box<Expr>),
-    Gamma(Box<Expr>)
+    Gamma(Box<Expr>),
+    Cos(Box<Expr>)
 }
 
 pub enum Todo {
@@ -58,6 +59,12 @@ named!(gamma<CompleteStr, Expr>,
     )
 );
 
+named!(cos<CompleteStr, Expr>,
+    map!(delimited!(tag!("cos("), expr, tag!(")")),
+        |x| Expr::Cos(Box::new(x))
+    )
+);
+
 named!(factor<CompleteStr, Expr>,
     alt!(
         ws!(scalar) | 
@@ -67,6 +74,7 @@ named!(factor<CompleteStr, Expr>,
         ws!(exp)    |
         ws!(ln)     |
         ws!(gamma)  |
+        ws!(cos)    |
         ws!(delimited!(tag!("("), expr, tag!(")")))
     )
 );
@@ -196,6 +204,10 @@ pub fn make_rpn(input: &str, tokens: &mut [i32], floats: &mut [f32]) -> bool {
             }
             Todo::Expr(Gamma(e1)) => {
                 todos.push(Todo::Op(11));
+                todos.push(Todo::Expr(*e1));
+            }
+            Todo::Expr(Cos(e1)) => {
+                todos.push(Todo::Op(12));
                 todos.push(Todo::Expr(*e1));
             }
             Todo::Op(o) => {

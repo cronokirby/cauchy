@@ -77,6 +77,12 @@ vec2 c_gamma(vec2 cart) {
     return sqrt(TAU) * c_mul(c_pow(cart, vec2(0.5, 0)), z_over_e);
 }
 
+vec2 c_cos(vec2 cart) {
+    float re = cos(cart.x) * cosh(cart.y);
+    float im = sin(cart.x) * sinh(cart.y);
+    return vec2(re, -im);
+}
+
 
 void main() {
     vec2 num = vec2(gl_FragCoord.x, gl_FragCoord.y) / 100 - 3;
@@ -143,6 +149,10 @@ void main() {
             case 11:
                 b = stack[stack_i];
                 stack[stack_i] = c_gamma(b);
+                break;
+            case 12:
+                b = stack[stack_i];
+                stack[stack_i] = c_cos(b);
                 break;
             default:
                 if (token >= 0) {
