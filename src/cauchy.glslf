@@ -3,6 +3,8 @@
 out vec4 color;
 
 uniform bool u_dark_plot;
+uniform float u_width;
+uniform float u_height;
 uniform Tokens {
     int u_tokens[128];
 };
@@ -85,7 +87,7 @@ vec2 c_cos(vec2 cart) {
 
 
 void main() {
-    vec2 num = vec2(gl_FragCoord.x, gl_FragCoord.y) / 100 - 3;
+    vec2 num = vec2(gl_FragCoord.x - u_width / 2, gl_FragCoord.y - u_height / 2) / u_height * 6;
     vec2 stack[40];
     int stack_i = -1;
 

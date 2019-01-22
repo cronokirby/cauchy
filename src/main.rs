@@ -67,6 +67,8 @@ struct Gui {
     input: InputState,
     plot_str: ImString,
     dark_plot: bool,
+    height: f32,
+    width: f32,
     tokens: [i32; 128],
     floats: [f32; 128]
 }
@@ -85,6 +87,8 @@ impl Gui {
         Renderer::init(&mut imgui, facade).map(|renderer| {
             Gui { 
                 imgui, renderer, input, plot_str, dark_plot: false,
+                height: 600.0,
+                width: 600.0,
                 tokens, floats
             }
         })
@@ -93,6 +97,10 @@ impl Gui {
     fn handle_event(&mut self, we: &WindowEvent) {
         self.input.handle_event(we);
         match we {
+            WindowEvent::Resized(size) => {
+                self.height = size.height as f32;
+                self.width = size.width as f32;
+            }
             WindowEvent::KeyboardInput{ input, .. } => {
                 if input.state == ElementState::Pressed {
                     let chr = match input.virtual_keycode {
@@ -236,6 +244,8 @@ fn main() {
         let float_buf = UniformBuffer::new(&display, gui.floats.clone()).unwrap();
         let uniforms = uniform! {
             u_dark_plot: gui.is_dark_plot(),
+            u_width: gui.width,
+            u_height: gui.height,
             Tokens: { &token_buf },
             Floats: { &float_buf }
         };
